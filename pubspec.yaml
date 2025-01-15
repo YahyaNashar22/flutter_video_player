@@ -13,6 +13,7 @@ dependencies:
   cupertino_icons: ^1.0.8
   video_player: ^2.9.2
   chewie: ^1.9.2
+  image_picker: ^1.1.2
 
 dev_dependencies:
   flutter_test:
