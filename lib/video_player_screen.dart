@@ -29,6 +29,9 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
         await _picker.pickVideo(source: ImageSource.gallery);
 
     if (pickedFile != null) {
+      setState(() {
+        _alertShown = false;
+      });
       _videoPlayerController = VideoPlayerController.file(File(pickedFile.path))
         ..addListener(() {
           if (_videoPlayerController.value.duration ==
