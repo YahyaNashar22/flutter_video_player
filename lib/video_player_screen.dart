@@ -15,6 +15,7 @@ class VideoPlayerScreen extends StatefulWidget {
 class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
   late VideoPlayerController _videoPlayerController;
   ChewieController? _chewieController;
+  bool _alertShown = false;
 
   final ImagePicker _picker = ImagePicker();
 
@@ -28,15 +29,14 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
         await _picker.pickVideo(source: ImageSource.gallery);
 
     if (pickedFile != null) {
-      // If there's a previous controller, dispose it to remove listeners
-      if (_videoPlayerController.value.isInitialized) {
-        _videoPlayerController.removeListener(() {});
-      }
-
       _videoPlayerController = VideoPlayerController.file(File(pickedFile.path))
         ..addListener(() {
           if (_videoPlayerController.value.duration ==
-              _videoPlayerController.value.position) {
+                  _videoPlayerController.value.position &&
+              !_alertShown) {
+            setState(() {
+              _alertShown = true;
+            });
             _showAlert();
           }
         })
@@ -44,6 +44,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
           setState(() {
             _chewieController = ChewieController(
               videoPlayerController: _videoPlayerController,
+              autoPlay: true,
               looping: false,
               allowFullScreen: true,
               fullScreenByDefault: false,
@@ -61,11 +62,15 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
               content: const Text("Hope you enjoyed it..."),
               actions: [
                 TextButton(
-                    onPressed: () {
-                      _videoPlayerController.seekTo(Duration.zero);
-                      Navigator.of(context).pop();
-                    },
-                    child: const Text("Ok"))
+                  onPressed: () {
+                    _videoPlayerController.seekTo(Duration.zero);
+                    setState(() {
+                      _alertShown = false;
+                    });
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text("Ok"),
+                )
               ],
             ));
   }
