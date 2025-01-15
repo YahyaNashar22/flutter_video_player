@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:chewie/chewie.dart';
+import 'package:flutter/services.dart';
 import 'package:video_player/video_player.dart';
 
 class VideoPlayerScreen extends StatefulWidget {
@@ -11,7 +12,7 @@ class VideoPlayerScreen extends StatefulWidget {
 
 class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
   late VideoPlayerController _videoPlayerController;
-  late ChewieController _chewieController;
+  bool _isFullScreen = false;
 
   @override
   void initState() {
@@ -26,13 +27,6 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
       ..initialize().then((_) {
         setState(() {});
       });
-
-    _chewieController = ChewieController(
-      videoPlayerController: _videoPlayerController,
-      aspectRatio: 16 / 9,
-      autoPlay: true,
-      looping: false,
-    );
   }
 
   void _showAlert() {
@@ -49,26 +43,74 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
             ));
   }
 
+  void _toggleFullScreen() {
+    setState(() {
+      _isFullScreen = !_isFullScreen;
+      if (_isFullScreen) {
+        SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
+      } else {
+        SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+      }
+    });
+  }
+
   @override
   void dispose() {
     _videoPlayerController.dispose();
-    _chewieController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Flutter Video Player"),
-      ),
+      appBar: _isFullScreen ? null : AppBar(title: Text('Video Player')),
       body: Center(
-        child: _chewieController != null &&
-                _chewieController.videoPlayerController.value.isInitialized
-            ? Chewie(
-                controller: _chewieController,
+        child: _videoPlayerController.value.isInitialized
+            ? AspectRatio(
+                aspectRatio: _videoPlayerController.value.aspectRatio,
+                child: Stack(
+                  alignment: Alignment.bottomCenter,
+                  children: [
+                    VideoPlayer(_videoPlayerController),
+                    _buildControls(),
+                  ],
+                ),
               )
             : const CircularProgressIndicator(),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _toggleFullScreen,
+        child: Icon(_isFullScreen ? Icons.fullscreen_exit : Icons.fullscreen),
+      ),
+    );
+  }
+
+  Widget _buildControls() {
+    return Container(
+      color: Colors.black54,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          IconButton(
+            icon: Icon(
+              _videoPlayerController.value.isPlaying
+                  ? Icons.pause
+                  : Icons.play_arrow,
+              color: Colors.white,
+            ),
+            onPressed: () {
+              setState(() {
+                _videoPlayerController.value.isPlaying
+                    ? _videoPlayerController.pause()
+                    : _videoPlayerController.play();
+              });
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.fullscreen, color: Colors.white),
+            onPressed: _toggleFullScreen,
+          ),
+        ],
       ),
     );
   }
