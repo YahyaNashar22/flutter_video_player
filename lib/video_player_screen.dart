@@ -48,6 +48,11 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
               looping: false,
               allowFullScreen: true,
               fullScreenByDefault: false,
+              materialProgressColors: ChewieProgressColors(
+                playedColor: Colors.deepOrange,
+                handleColor: Colors.deepOrangeAccent,
+                backgroundColor: Colors.grey.withOpacity(0.3),
+              ),
             );
           });
         });
@@ -58,8 +63,15 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
     showDialog(
         context: context,
         builder: (context) => AlertDialog(
-              title: const Text("Video Ended!"),
-              content: const Text("Hope you enjoyed it..."),
+              backgroundColor: Colors.black87,
+              title: const Text(
+                "Video Ended!",
+                style: TextStyle(color: Colors.white),
+              ),
+              content: const Text(
+                "Hope you enjoyed it...",
+                style: TextStyle(color: Colors.white70),
+              ),
               actions: [
                 TextButton(
                   onPressed: () {
@@ -69,7 +81,10 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
                     });
                     Navigator.of(context).pop();
                   },
-                  child: const Text("Ok"),
+                  child: const Text(
+                    "Ok",
+                    style: TextStyle(color: Colors.orange),
+                  ),
                 )
               ],
             ));
@@ -86,19 +101,45 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Flutter Video Player"),
+        backgroundColor: Colors.black87,
+        title: const Text(
+          "Flutter Video Player",
+          style: TextStyle(color: Colors.white70),
+        ),
         actions: [
           IconButton(
-              onPressed: _pickVideo, icon: const Icon(Icons.video_library)),
+            onPressed: _pickVideo,
+            icon: const Icon(
+              Icons.video_library,
+              color: Colors.orange,
+            ),
+          ),
+          IconButton(
+            onPressed: () {
+              setState(() {
+                _chewieController?.dispose();
+                _videoPlayerController.dispose();
+                _chewieController = null;
+              });
+            },
+            icon: const Icon(
+              Icons.cancel,
+              color: Colors.red,
+            ),
+          ),
         ],
       ),
+      backgroundColor: Colors.black,
       body: Center(
         child: _chewieController != null &&
                 _chewieController!.videoPlayerController.value.isInitialized
             ? Chewie(
                 controller: _chewieController!,
               )
-            : const Text("Pick A Video!"),
+            : const Text(
+                "Pick A Video!",
+                style: TextStyle(color: Colors.orange),
+              ),
       ),
     );
   }
